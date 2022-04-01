@@ -1,0 +1,2 @@
+SELECT * FROM bot
+WHERE id = 
