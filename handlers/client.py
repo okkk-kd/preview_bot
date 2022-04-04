@@ -1,18 +1,19 @@
 from aiogram import Dispatcher, types
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters import Text
 from dataBase.execute_query import execute_query, paste_user
 from create_bot import db_name
 import aiogram.utils.markdown as md
 from aiogram.types import ParseMode
-from dataBase.execute_query import paste_user
+import logging
 
 from create_bot import dp, bot
-from keyboards import btn_request_form
+from keyboards import btn_request_form, inline_btn_block_info, btn_block_tariffs
+from schedule.schedule import return_schedule, Schedule_ob
 
 class Form(StatesGroup):
     name = State()
+    tariff = State()
     phone = State()
     nickname = State()
     tg_id = State()
@@ -46,23 +47,29 @@ async def user_form_start(message : types.Message):
     except:
         await message.answer('Something went wrong, error messages are processed by me as quickly as possible\n\nЧто-то пошло не так, сообщения об ошибках обрабатываются мной максимально быстро')
 
-async def cancel_handler(message: types.Message, state: FSMContext):
+async def cancel_handler(message: types.Message, state: Form):
     current_state = await state.get_state()
     if current_state is None:
         return
     await state.finish()
     await message.answer('Cancellation was successful\n\nОтмена произошла успешно')
 
-async def get_name(message: types.Message, state: FSMContext):
+async def get_name(message: types.Message, state: Form):
     async with state.proxy() as data:
         data['name'] = message.text
         data['tg_id'] = message.from_user.id
         data['nickname'] = message.from_user.username
         data['status'] = 1
     await Form.next()
-    await message.answer('Enter phone number\n\nВведите номер телефона')
+    await message.answer('Choose a plan | Выберите тариф', reply_markup=btn_block_tariffs)
 
-async def get_phone(message: types.Message, state: FSMContext):
+async def get_tariff_form(message: types.Message, state: Form):
+    async with state.proxy() as data:
+        data['tariff'] = message.text
+    await Form.next()
+    await message.answer('Введите телефон', reply_markup=btn_request_form)
+
+async def get_phone(message: types.Message, state: Form):
     async with state.proxy() as data:
         data['phone'] = message.text
     user = [
@@ -70,7 +77,8 @@ async def get_phone(message: types.Message, state: FSMContext):
         data['phone'],
         data['tg_id'],
         data['nickname'],
-        data['status'])
+        data['status'],
+        data['tariff'])
     ]
     condition = lambda a : "Обрабатывается | being processed" if (a == 1) else "Ошибка | Error status"
     await bot.send_message(
@@ -82,6 +90,7 @@ async def get_phone(message: types.Message, state: FSMContext):
                 md.text('Telegram id: ', data['tg_id']),
                 md.text('Имя пользователя: ', data['nickname']),
                 md.text('Статус: ', condition(data['status'])),
+                md.text('Тариф: ', data['tariff']),
                 sep='\n',
             ),
             parse_mode=ParseMode.MARKDOWN,
@@ -93,15 +102,86 @@ async def get_phone(message: types.Message, state: FSMContext):
 
 async def command_info(message : types.Message):
     try:
-        await bot.send_message(message.from_user.id, 'Any of your information can be located here, you can see an example for yourself:\n\nЗдесь может располагаться любая ваша информация, пример вы можете видеть сами:', reply_markup=btn_request_form)
+        await bot.send_message(message.from_user.id, 'Any of your information can be located here, you can see an example for yourself:\n\nЗдесь может располагаться любая ваша информация, пример вы можете видеть сами:', reply_markup=inline_btn_block_info)
     except:
         await message.answer('Something went wrong, error messages are processed by me as quickly as possible\n\nЧто-то пошло не так, сообщения об ошибках обрабатываются мной максимально быстро')
 
+async def info_FAQ(callback : types.CallbackQuery):
+    await callback.message.answer(callback.data)
+    await callback.answer()
+
+async def info_about(callback : types.CallbackQuery):
+    await callback.message.answer(callback.data)
+    await callback.answer()
+
+#  __________________________тарифы_____________________________
+
+async def tariffs_info(message : types.Message):
+    try:
+        await bot.send_message(message.from_user.id, 'Any payment related information can be found here.\n\nЗдесь может находиться любая информация касающаяся оплаты', reply_markup=inline_btn_block_tariffs)
+    except:
+        await message.answer('Something went wrong, error messages are processed by me as quickly as possible\n\nЧто-то пошло не так, сообщения об ошибках обрабатываются мной максимально быстро')
+
+async def send_offer_prewiew(callback : types.CallbackQuery):
+    match callback.data:
+        case "1 Offer":
+            await callback.message.answer('1')
+            await callback.answer()
+        case "2 Offer":
+            await callback.message.answer('2')
+            await callback.answer()
+        case "3 Offer":
+            await callback.message.answer('3')
+            await callback.answer()
+        case "4 Offer":
+            await callback.message.answer('4')
+            await callback.answer()
+
+@dp.callback_query_handler(text_startswith='Offer', state=Form)
+async def send_offer(callback : types.CallbackQuery, state: FSMContext):
+    match callback.data:
+        case "1 Offer":
+            await callback.message.answer('1')
+            await callback.answer()
+        case "2 Offer":
+            await callback.message.answer('2')
+            await callback.answer()
+        case "3 Offer":
+            await callback.message.answer('3')
+            await callback.answer()
+        case "4 Offer":
+            await callback.message.answer('4')
+            await callback.answer()
+
+#  __________________________расписание_____________________________
+
+async def get_schedule(message : types.Message):
+    schedule = return_schedule()
+    print(len(schedule))
+    activities = ""
+    for obj in schedule:
+        print("_____________")
+        ob = obj.return_activ()
+        for activ in ob:
+            print(activ)
+            activities += activ + "\n"
+        string = obj.day + "\n" + activities
+        activities = ""
+        await bot.send_message(message.from_user.id, string)
 
 def register_handlers_client(dp: Dispatcher):
-    dp.register_message_handler(command_start, commands=['start', 'старт'])
-    dp.register_message_handler(command_info, commands=['инфо'])
-    dp.register_message_handler(user_form_start, commands=['заявка'])
-    dp.register_message_handler(cancel_handler, commands=['отмена'], state='*')
+    FAQ=lambda c: c.data == 'FAQ'
+    about=lambda c: c.data == 'about'
+    offer=lambda c: c.data.find("Offer") > 0
+    dp.register_message_handler(command_start, commands=['start'])
+    dp.register_message_handler(get_schedule, commands=['schedule'])
+    dp.register_message_handler(command_info, commands=['info'])
+    dp.register_message_handler(user_form_start, commands=['request'])
+    dp.register_message_handler(cancel_handler, commands=['cancell'], state='*')
+    dp.register_message_handler(tariffs_info, commands=['tariffs'])
     dp.register_message_handler(get_name, state=Form.name)
     dp.register_message_handler(get_phone, state=Form.phone)
+    dp.register_message_handler(get_tariff_form, state=Form.tariff)
+    dp.register_callback_query_handler(info_FAQ, FAQ)
+    dp.register_callback_query_handler(info_about, about)
+    dp.register_callback_query_handler(send_offer_prewiew, offer)

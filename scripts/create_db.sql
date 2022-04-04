@@ -4,5 +4,6 @@ CREATE TABLE bot (
     phone TEXT NOT NULL,
     nickname TEXT NOT NULL,
     tg_id TEXT NOT NULL,
-    status INTEGER NOT NULL
+    status INTEGER NOT NULL,
+    tariff TEXT NOT NULL
 );
