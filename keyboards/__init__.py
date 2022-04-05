@@ -1,2 +1,2 @@
-from keyboards.request import btn_request_form, inline_btn_block_info, btn_block_tariffs
+from keyboards.request import btn_request_form, inline_btn_block_info, btn_block_tariffs, inline_btn_block_tariffs, inline_btn_block_q, inline_btn_request_tariff
 from keyboards.admin_kb import btn_case_admin, inline_btn_block_control

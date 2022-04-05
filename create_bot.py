@@ -7,8 +7,9 @@ from dataBase.execute_query import execute_query
 db_name = "clients" + "_bot.db"
 storage = MemoryStorage()
 
-API_TOKEN = "5176755732:AAGIJK5REu4wPnfBbI-VMm84R1wl9X8QTRs"
-logging.basicConfig(level=logging.DEBUG)
+# API_TOKEN = "5287234911:AAHdvM3Wr0mxVaGKmafSSx4TSo4fVSAuOuQ"
+API_TOKEN = "5201780383:AAFFrv7H2xhESrX2EN9RA8UjhDkxYXvIa_g"
+logging.basicConfig(level=logging.INFO)
 
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot, storage=storage)

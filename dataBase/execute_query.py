@@ -5,7 +5,7 @@ def execute_query(db_name, query):
 		connection = sqlite3.connect(db_name)
 		cursor = connection.cursor()
 		print("База данных подключена")
-		if (query.find(".sql") > -1):
+		if (query.find(".sql") > 0):
 			with open(query, 'r') as sqlite_file:
 				sql_script = sqlite_file.read()
 			cursor.executescript(sql_script)
