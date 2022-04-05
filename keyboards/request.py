@@ -1,3 +1,4 @@
+from doctest import IGNORE_EXCEPTION_DETAIL
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 
 #  __________________________основная клавиатура_____________________________
@@ -67,3 +68,8 @@ btn_block_tariffs = ReplyKeyboardMarkup(resize_keyboard=True)\
     .add(btn_1_each_week)\
     .add(btn_2_each_week)\
     .add(btn_month)
+
+# _________________ Inline кнопки отправки вопроса ________________________
+
+btn_cancle = KeyboardButton("/отмена_вопроса")
+btn_cancle_new_question = ReplyKeyboardMarkup(resize_keyboard=True)

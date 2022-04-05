@@ -3,13 +3,13 @@ from aiogram import Dispatcher, types
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.dispatcher import FSMContext
 from dataBase.execute_query import execute_query, paste_user
-from create_bot import db_name
+from create_bot import db_name, db_question
 import aiogram.utils.markdown as md
 from aiogram.types import ParseMode
 import logging
 
 from create_bot import dp, bot
-from keyboards import btn_request_form, inline_btn_block_info, btn_block_tariffs, inline_btn_block_tariffs, inline_btn_block_q, inline_btn_request_tariff
+from keyboards import btn_request_form, inline_btn_block_info, btn_block_tariffs, inline_btn_block_tariffs, inline_btn_block_q, inline_btn_request_tariff, btn_cancle_new_question
 from schedule.schedule import return_schedule, Schedule_ob
 
 class Form(StatesGroup):
@@ -19,6 +19,9 @@ class Form(StatesGroup):
     nickname = State()
     tg_id = State()
     status = State()
+
+class SendQuestion(StatesGroup):
+    text_q = State()
 
 #  __________________________старт_____________________________
 
@@ -133,8 +136,33 @@ async def info_questions(callback : types.CallbackQuery):
             await callback.message.answer("Answer to the 5_q question")
             await callback.answer()
         case "new_q":
-            await callback.message.answer("Answer to the new_q question")
+            await callback.message.answer("Введите ваш вопрос, мы его обработаем и отправим ответ лично вам, если подобный вопрос задаст большое количество людей, то вы его сможете найти в списке выше")
+            await SendQuestion.text_q.set()
             await callback.answer()
+
+async def get_text_question(message: types.Message, state: SendQuestion):
+    async with state.proxy() as data:
+        data['text_q'] = message.text
+    user = [
+        (data['text_q'],
+        message.from_user.id,
+        message.from_user.username,
+        1)
+    ]
+    print(user)
+    await bot.send_message(
+            message.chat.id,
+            md.text(
+                md.text('Вопрос: ', user[0][0]),
+                md.text('ID: ', user[0][1]),
+                md.text('Nickname: ', user[0][2]),
+                md.text('Статус: ', user[0][3]),
+                sep='\n',
+            ),
+            parse_mode=ParseMode.MARKDOWN,
+        )
+    paste_user(db_name=db_question, user=user, table="question")
+    await state.finish()
 
 #  __________________________тарифы_____________________________
 
@@ -224,6 +252,7 @@ def register_handlers_client(dp: Dispatcher):
     dp.register_message_handler(get_name, state=Form.name)
     dp.register_message_handler(get_phone, state=Form.phone)
     dp.register_message_handler(get_tariff_form, state=Form.tariff)
+    dp.register_message_handler(get_text_question, state=SendQuestion.text_q)
     dp.register_callback_query_handler(info_FAQ, FAQ)
     dp.register_callback_query_handler(info_about, about)
     dp.register_callback_query_handler(send_offer_prewiew, offer)

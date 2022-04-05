@@ -1,3 +1,4 @@
 __pycache__
 venv
-_bot.db
+client_bot.db
+question.db

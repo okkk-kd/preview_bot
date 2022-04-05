@@ -28,8 +28,8 @@ def execute_query(db_name, query):
 			connection.close()
 			print("Соединение с базой данных закрыто")
 
-def paste_user(db_name, user):
-	stmt = "INSERT INTO `bot`(`name`, `phone`, `tg_id`, `nickname`, `status`, `tariff`) VALUES (?, ?, ?, ?, ?, ?)"
+def paste_user(db_name, user, table="bot"):
+	stmt = "INSERT INTO `"+table+"`(`name`, `phone`, `tg_id`, `nickname`, `status`, `tariff`) VALUES (?, ?, ?, ?, ?, ?)"
 	try:
 		connection = sqlite3.connect(db_name)
 		cursor = connection.cursor()

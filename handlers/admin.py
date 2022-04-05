@@ -7,10 +7,7 @@ from aiogram.dispatcher import FSMContext
 from dataBase.execute_query import execute_query, paste_user
 
 from create_bot import dp, bot
-from keyboards import btn_case_admin, inline_btn_block_control, btn_request_form
-
-class auth_adm(StatesGroup):
-    id = State()
+from keyboards import btn_case_admin, inline_btn_block_control, btn_request_form, inline_btn_block_control_accepted
 
 #  __________________________старт_____________________________
 
@@ -29,8 +26,6 @@ async def load_requests(message : types.Message):
     requests = each_el_db()
     length = len(requests)
     i = 0
-    print(requests)
-    print(length)
     while (i < length):
         await message.answer("Id: " + str(requests[i][0]) + "\nИмя: " + str(requests[i][1]) + "\nТелефон: " + str(requests[i][2]) + "\nNickname: " + str(requests[i][3]) + "\nТариф: " + str(requests[i][6]), reply_markup=inline_btn_block_control)
         i+=1
@@ -43,6 +38,7 @@ async def accept_btn(callback : types.CallbackQuery):
         query = "UPDATE bot SET status=2 WHERE id ='" + id + "'"
         execute_query(db_name=db_name, query=query)
         await callback.answer()
+        await callback.message.delete()
 
 
 def each_el_db():
@@ -56,10 +52,8 @@ async def remove_requests(message : types.Message):
     requests = each_el_db_r()
     length = len(requests)
     i = 0
-    print(requests)
-    print(length)
     while (i < length):
-        await message.answer("Id: " + str(requests[i][0]) + "\nИмя: " + str(requests[i][1]) + "\nТелефон: " + str(requests[i][2]) + "\nNickname: " + str(requests[i][3]) + "\nТариф: " + str(requests[i][6]), reply_markup=inline_btn_block_control)
+        await message.answer("Id: " + str(requests[i][0]) + "\nИмя: " + str(requests[i][1]) + "\nТелефон: " + str(requests[i][2]) + "\nNickname: " + str(requests[i][3]) + "\nТариф: " + str(requests[i][6]), reply_markup=inline_btn_block_control_accepted)
         i+=1
 
 def each_el_db_r():
@@ -67,6 +61,16 @@ def each_el_db_r():
     stmt = "SELECT * FROM bot WHERE status != 1"
     requests.append(execute_query(db_name=db_name, query=stmt))
     return execute_query(db_name=db_name, query=stmt)
+
+@dp.callback_query_handler(text_startswith='cancle')
+async def accept_btn(callback : types.CallbackQuery):
+    stmt = callback.message.text
+    if (stmt.find("Id:") == 0):
+        id = stmt[4]
+        query = "UPDATE bot SET status=1 WHERE id ='" + id + "'"
+        execute_query(db_name=db_name, query=query)
+        await callback.message.delete()
+        await callback.answer()
 
 @dp.callback_query_handler(text_startswith='profile')
 async def get_profile(callback : types.CallbackQuery):
