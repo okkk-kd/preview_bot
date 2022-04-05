@@ -3,10 +3,12 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardBut
 btn_load_requests = KeyboardButton('/активные_заявки')
 btn_remove_requests = KeyboardButton('/неактивные_заявки')
 btn_standart_kb = KeyboardButton('/вернуть_прежнюю_клавиатуру')
+btn_accept_q = KeyboardButton('/просмотр_новых_вопросов')
 
 btn_case_admin = ReplyKeyboardMarkup(resize_keyboard=True)\
     .add(btn_load_requests)\
     .insert(btn_remove_requests)\
+    .add(btn_accept_q)\
     .add(btn_standart_kb)
 
 
