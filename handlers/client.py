@@ -3,13 +3,13 @@ from aiogram import Dispatcher, types
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.dispatcher import FSMContext
 from dataBase.execute_query import execute_query, paste_user
-from create_bot import db_name
+from create_bot import db_name, db_question
 import aiogram.utils.markdown as md
 from aiogram.types import ParseMode
 import logging
 
 from create_bot import dp, bot
-from keyboards import btn_request_form, inline_btn_block_info, btn_block_tariffs, inline_btn_block_tariffs, inline_btn_block_q, inline_btn_request_tariff
+from keyboards import btn_request_form, inline_btn_block_info, btn_block_tariffs, inline_btn_block_tariffs, inline_btn_block_q, inline_btn_request_tariff, btn_cancle_new_question
 from schedule.schedule import return_schedule, Schedule_ob
 
 class Form(StatesGroup):
@@ -20,6 +20,9 @@ class Form(StatesGroup):
     tg_id = State()
     status = State()
 
+class SendQuestion(StatesGroup):
+    text_q = State()
+
 #  __________________________старт_____________________________
 
 async def command_start(message : types.Message):
@@ -28,19 +31,16 @@ async def command_start(message : types.Message):
     except:
         await message.answer('Something went wrong, error messages are processed by me as quickly as possible\n\nЧто-то пошло не так, сообщения об ошибках обрабатываются мной максимально быстро')
 
-def check_username(userid):
-    id = execute_query(db_name, "SELECT EXISTS(SELECT tg_id FROM bot WHERE tg_id = '" + str(userid) + "' AND status = 1)")
-    print("id: " + str(id))
+def check_username(userid, db_name, query):
+    id = execute_query(db_name, query)
     return id
 
 #  __________________________форма_____________________________
 
 async def user_form_start(message : types.Message):
     try:
-        print (message.from_user.id)
-        print (message.from_user.first_name)
-        print (message.from_user.last_name)
-        if (check_username(message.from_user.id)[0][0] == 1):
+        query = "SELECT EXISTS(SELECT tg_id FROM bot WHERE tg_id = '" + str(message.from_user.id) + "' AND status = 1)"
+        if (check_username(message.from_user.id, db_name, query)[0][0] == 1):
             await message.answer('Your application is being processed, please wait for a response\n\nВаша заявка обрабатывается, дождитесь ответа')
         else:
             await Form.name.set()
@@ -96,7 +96,8 @@ async def get_phone(message: types.Message, state: Form):
             ),
             parse_mode=ParseMode.MARKDOWN,
         )
-    paste_user(db_name, user)
+    stmt = "INSERT INTO `bot`(`name`, `phone`, `tg_id`, `nickname`, `status`, `tariff`) VALUES (?, ?, ?, ?, ?, ?)"
+    paste_user(db_name, stmt, user)
     await state.finish()
 
 #  __________________________инфо_____________________________
@@ -118,23 +119,62 @@ async def info_about(callback : types.CallbackQuery):
 async def info_questions(callback : types.CallbackQuery):
     match callback.data:
         case "1_q":
-            await callback.message.answer("Answer to the 1_q question")
+            await callback.message.answer("Ответ на 1 вопрос")
             await callback.answer()
         case "2_q":
-            await callback.message.answer("Answer to the 2_q question")
+            await callback.message.answer("Ответ на 2 вопрос")
             await callback.answer()
         case "3_q":
-            await callback.message.answer("Answer to the 3_q question")
+            await callback.message.answer("Ответ на 3 вопрос")
             await callback.answer()
         case "4_q":
-            await callback.message.answer("Answer to the 4_q question")
+            await callback.message.answer("Ответ на 4 вопрос")
             await callback.answer()
         case "5_q":
-            await callback.message.answer("Answer to the 5_q question")
+            await callback.message.answer("Ответ на 5 вопрос")
             await callback.answer()
         case "new_q":
-            await callback.message.answer("Answer to the new_q question")
-            await callback.answer()
+            query = "SELECT EXISTS(SELECT id_tg FROM question WHERE id_tg = '" + str(callback.from_user.id) + "' AND status = 1)"
+            if (check_username(callback.from_user.id, db_question, query)[0][0] == 1):
+                await callback.message.answer('Ваш вопрос передан, мы его обработаем и отправим ответ лично вам, если подобный вопрос задаст большое количество людей, то вы его сможете найти в списке выше')
+                await callback.answer()
+            else:
+                await callback.message.answer("Введите ваш вопрос", reply_markup=btn_cancle_new_question)
+                await SendQuestion.text_q.set()
+                await callback.answer()
+
+async def cancel_form_question(message: types.Message, state: SendQuestion):
+    current_state = await state.get_state()
+    if current_state is None:
+        return
+    await message.answer('Отправка вопроса была успешно прекращена', reply_markup=btn_request_form)
+    await state.finish()
+    
+async def get_text_question(message: types.Message, state: SendQuestion):
+    async with state.proxy() as data:
+        data['text_q'] = message.text
+    user = [
+        (data['text_q'],
+        message.from_user.id,
+        message.from_user.username,
+        1)
+    ]
+    print(user)
+    await bot.send_message(
+            message.chat.id,
+            md.text(
+                md.text('Вопрос: ', user[0][0]),
+                md.text('ID: ', user[0][1]),
+                md.text('Nickname: ', user[0][2]),
+                md.text('Статус: ', user[0][3]),
+                sep='\n',
+            ),
+            parse_mode=ParseMode.MARKDOWN,
+        )
+    stmt = "INSERT INTO `question`(`question`, `id_tg`, `nickname`, `status`) VALUES (?, ?, ?, ?)"
+    paste_user(db_name=db_question, stmt=stmt, user=user)
+    await state.finish()
+    await message.answer("Ваш вопрос передан, мы его обработаем и отправим ответ лично вам, если подобный вопрос задаст большое количество людей, то вы его сможете найти в списке выше", reply_markup=btn_request_form)
 
 #  __________________________тарифы_____________________________
 
@@ -224,6 +264,8 @@ def register_handlers_client(dp: Dispatcher):
     dp.register_message_handler(get_name, state=Form.name)
     dp.register_message_handler(get_phone, state=Form.phone)
     dp.register_message_handler(get_tariff_form, state=Form.tariff)
+    dp.register_message_handler(cancel_form_question, commands=['отмена_вопроса'], state='*')
+    dp.register_message_handler(get_text_question, state=SendQuestion.text_q)
     dp.register_callback_query_handler(info_FAQ, FAQ)
     dp.register_callback_query_handler(info_about, about)
     dp.register_callback_query_handler(send_offer_prewiew, offer)
