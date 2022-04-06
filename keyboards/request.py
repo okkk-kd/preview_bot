@@ -71,5 +71,5 @@ btn_block_tariffs = ReplyKeyboardMarkup(resize_keyboard=True)\
 
 # _________________ Inline кнопки отправки вопроса ________________________
 
-btn_cancle = KeyboardButton("/отмена_вопроса")
-btn_cancle_new_question = ReplyKeyboardMarkup(resize_keyboard=True)
+btn_cancel_q = KeyboardButton("/отмена_вопроса")
+btn_cancel_new_question = ReplyKeyboardMarkup(resize_keyboard=True).add(btn_cancel_q)

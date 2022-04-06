@@ -9,7 +9,7 @@ from aiogram.types import ParseMode
 import logging
 
 from create_bot import dp, bot
-from keyboards import btn_request_form, inline_btn_block_info, btn_block_tariffs, inline_btn_block_tariffs, inline_btn_block_q, inline_btn_request_tariff, btn_cancle_new_question
+from keyboards import btn_request_form, inline_btn_block_info, btn_block_tariffs, inline_btn_block_tariffs, inline_btn_block_q, inline_btn_request_tariff, btn_cancel_new_question
 from schedule.schedule import return_schedule, Schedule_ob
 
 class Form(StatesGroup):
@@ -139,7 +139,7 @@ async def info_questions(callback : types.CallbackQuery):
                 await callback.message.answer('Ваш вопрос передан, мы его обработаем и отправим ответ лично вам, если подобный вопрос задаст большое количество людей, то вы его сможете найти в списке выше')
                 await callback.answer()
             else:
-                await callback.message.answer("Введите ваш вопрос", reply_markup=btn_cancle_new_question)
+                await callback.message.answer("Введите ваш вопрос", reply_markup=btn_cancel_new_question)
                 await SendQuestion.text_q.set()
                 await callback.answer()
 
@@ -199,21 +199,20 @@ async def send_offer_prewiew(callback : types.CallbackQuery):
             await callback.message.answer('Дополнительная информация о данном тарифе 4', reply_markup=inline_btn_request_tariff)
             await callback.answer()
 
-@dp.callback_query_handler(text_startswith='send_')
+@dp.callback_query_handler(text_startswith='send_request')
 async def send_offer(callback : types.CallbackQuery):
     try:
-        match callback.data:
-            case "send_request":
-                print (callback.from_user.id)
-                print (callback.from_user.first_name)
-                print (callback.from_user.last_name)
-                if (check_username(callback.from_user.id)[0][0] == 1):
-                    await callback.message.answer('Your application is being processed, please wait for a response\n\nВаша заявка обрабатывается, дождитесь ответа')
-                    await callback.answer()
-                else:
-                    await Form.name.set()
-                    await callback.message.answer('Enter your name\n\nВведие ваше имя')
-                    await callback.answer()
+        print (callback.from_user.id)
+        print (callback.from_user.first_name)
+        print (callback.from_user.last_name)
+        query = "SELECT EXISTS(SELECT tg_id FROM bot WHERE tg_id = '" + str(callback.from_user.id) + "' AND status = 1)"
+        if (check_username(callback.from_user.id, db_name, query)[0][0] == 1):
+            await callback.message.answer('Your application is being processed, please wait for a response\n\nВаша заявка обрабатывается, дождитесь ответа')
+            await callback.answer()
+        else:
+            await Form.name.set()
+            await callback.message.answer('Enter your name\n\nВведие ваше имя')
+            await callback.answer()
     except:
         await callback.message.answer('Something went wrong, error messages are processed by me as quickly as possible\n\nЧто-то пошло не так, сообщения об ошибках обрабатываются мной максимально быстро')
         await callback.answer()
@@ -238,15 +237,12 @@ async def send_offer(callback : types.CallbackQuery, state: FSMContext):
 
 async def get_schedule(message : types.Message):
     schedule = return_schedule()
-    print(len(schedule))
     activities = ""
     for obj in schedule:
-        print("_____________")
         ob = obj.return_activ()
         for activ in ob:
-            print(activ)
-            activities += activ + "\n"
-        string = obj.day + "\n" + activities
+            activities += activ
+        string = obj.day + activities
         activities = ""
         await bot.send_message(message.from_user.id, string)
 
