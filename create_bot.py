@@ -18,5 +18,5 @@ dp = Dispatcher(bot, storage=storage)
 create_connection(db_name)
 create_connection(db_question)
 
-execute_query(db_name, "scripts\create_db_client.sql")
-execute_query(db_question, "scripts\create_db_client_copy.sql")
+execute_query(db_name, "scripts/create_db_client.sql")
+execute_query(db_question, "scripts/create_db_client_copy.sql")

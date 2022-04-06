@@ -117,31 +117,30 @@ async def info_about(callback : types.CallbackQuery):
     await callback.answer()
 
 async def info_questions(callback : types.CallbackQuery):
-    match callback.data:
-        case "1_q":
-            await callback.message.answer("Ответ на 1 вопрос")
+    if (callback.data == "1_q"):
+        await callback.message.answer("Ответ на 1 вопрос")
+        await callback.answer()
+    elif (callback.data == "2_q"):
+        await callback.message.answer("Ответ на 2 вопрос")
+        await callback.answer()
+    elif (callback.data == "3_q"):
+        await callback.message.answer("Ответ на 3 вопрос")
+        await callback.answer()
+    elif (callback.data == "4_q"):
+        await callback.message.answer("Ответ на 4 вопрос")
+        await callback.answer()
+    elif (callback.data == "5_q"):
+        await callback.message.answer("Ответ на 5 вопрос")
+        await callback.answer()
+    elif (callback.data == "new_q"):
+        query = "SELECT EXISTS(SELECT id_tg FROM question WHERE id_tg = '" + str(callback.from_user.id) + "' AND status = 1)"
+        if (check_username(callback.from_user.id, db_question, query)[0][0] == 1):
+            await callback.message.answer('Ваш вопрос передан, мы его обработаем и отправим ответ лично вам, если подобный вопрос задаст большое количество людей, то вы его сможете найти в списке выше')
             await callback.answer()
-        case "2_q":
-            await callback.message.answer("Ответ на 2 вопрос")
+        else:
+            await callback.message.answer("Введите ваш вопрос", reply_markup=btn_cancel_new_question)
+            await SendQuestion.text_q.set()
             await callback.answer()
-        case "3_q":
-            await callback.message.answer("Ответ на 3 вопрос")
-            await callback.answer()
-        case "4_q":
-            await callback.message.answer("Ответ на 4 вопрос")
-            await callback.answer()
-        case "5_q":
-            await callback.message.answer("Ответ на 5 вопрос")
-            await callback.answer()
-        case "new_q":
-            query = "SELECT EXISTS(SELECT id_tg FROM question WHERE id_tg = '" + str(callback.from_user.id) + "' AND status = 1)"
-            if (check_username(callback.from_user.id, db_question, query)[0][0] == 1):
-                await callback.message.answer('Ваш вопрос передан, мы его обработаем и отправим ответ лично вам, если подобный вопрос задаст большое количество людей, то вы его сможете найти в списке выше')
-                await callback.answer()
-            else:
-                await callback.message.answer("Введите ваш вопрос", reply_markup=btn_cancel_new_question)
-                await SendQuestion.text_q.set()
-                await callback.answer()
 
 async def cancel_form_question(message: types.Message, state: SendQuestion):
     current_state = await state.get_state()
@@ -185,19 +184,18 @@ async def tariffs_info(message : types.Message):
         await message.answer('Something went wrong, error messages are processed by me as quickly as possible\n\nЧто-то пошло не так, сообщения об ошибках обрабатываются мной максимально быстро')
 
 async def send_offer_prewiew(callback : types.CallbackQuery):
-    match callback.data:
-        case "1 Offer":
-            await callback.message.answer('Дополнительная информация о данном тарифе 1', reply_markup=inline_btn_request_tariff)
-            await callback.answer()
-        case "2 Offer":
-            await callback.message.answer('Дополнительная информация о данном тарифе 2', reply_markup=inline_btn_request_tariff)
-            await callback.answer()
-        case "3 Offer":
-            await callback.message.answer('Дополнительная информация о данном тарифе 3', reply_markup=inline_btn_request_tariff)
-            await callback.answer()
-        case "4 Offer":
-            await callback.message.answer('Дополнительная информация о данном тарифе 4', reply_markup=inline_btn_request_tariff)
-            await callback.answer()
+    if (callback.data == "1 Offer"):
+        await callback.message.answer('Дополнительная информация о данном тарифе 1', reply_markup=inline_btn_request_tariff)
+        await callback.answer()
+    elif (callback.data == "2 Offer"):
+        await callback.message.answer('Дополнительная информация о данном тарифе 2', reply_markup=inline_btn_request_tariff)
+        await callback.answer()
+    elif (callback.data == "3 Offer"):
+        await callback.message.answer('Дополнительная информация о данном тарифе 3', reply_markup=inline_btn_request_tariff)
+        await callback.answer()
+    elif (callback.data == "4 Offer"):
+        await callback.message.answer('Дополнительная информация о данном тарифе 4', reply_markup=inline_btn_request_tariff)
+        await callback.answer()
 
 @dp.callback_query_handler(text_startswith='send_request')
 async def send_offer(callback : types.CallbackQuery):
@@ -217,21 +215,21 @@ async def send_offer(callback : types.CallbackQuery):
         await callback.message.answer('Something went wrong, error messages are processed by me as quickly as possible\n\nЧто-то пошло не так, сообщения об ошибках обрабатываются мной максимально быстро')
         await callback.answer()
 
-@dp.callback_query_handler(text_startswith='Offer', state=Form)
-async def send_offer(callback : types.CallbackQuery, state: FSMContext):
-    match callback.data:
-        case "1 Offer":
-            await callback.message.answer('1')
-            await callback.answer()
-        case "2 Offer":
-            await callback.message.answer('2')
-            await callback.answer()
-        case "3 Offer":
-            await callback.message.answer('3')
-            await callback.answer()
-        case "4 Offer":
-            await callback.message.answer('4')
-            await callback.answer()
+# @dp.callback_query_handler(text_startswith='Offer', state=Form)
+# async def send_offer(callback : types.CallbackQuery, state: FSMContext):
+#     match callback.data:
+#         case "1 Offer":
+#             await callback.message.answer('1')
+#             await callback.answer()
+#         case "2 Offer":
+#             await callback.message.answer('2')
+#             await callback.answer()
+#         case "3 Offer":
+#             await callback.message.answer('3')
+#             await callback.answer()
+#         case "4 Offer":
+#             await callback.message.answer('4')
+#             await callback.answer()
 
 #  __________________________расписание_____________________________
 
