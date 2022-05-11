@@ -1,5 +1,6 @@
 from subprocess import call
 from aiogram import Dispatcher, types
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.dispatcher import FSMContext
 from dataBase.execute_query import execute_query, paste_user
@@ -9,8 +10,12 @@ from aiogram.types import ParseMode
 import logging
 
 from create_bot import dp, bot
-from keyboards import btn_request_form, inline_btn_block_info, btn_block_tariffs, inline_btn_block_tariffs, inline_btn_block_q, inline_btn_request_tariff, btn_cancel_new_question
-from schedule.schedule import return_schedule, Schedule_ob
+from keyboards import btn_request_form, inline_btn_block_info, btn_block_tariffs, inline_btn_block_tariffs, inline_btn_block_q, inline_btn_request_tariff, btn_cancel_new_question, btn_uni_select_kb
+from algorithms.schedule import return_schedule, Schedule_ob
+from algorithms.uni_sel import uni_sellection_kb, uni_callback, get_arr_uni
+from aiogram.utils.callback_data import CallbackData
+
+import keyboards
 
 class Form(StatesGroup):
     uni = State()
@@ -132,7 +137,12 @@ async def command_info(message : types.Message):
         await message.answer('Что-то пошло не так, сообщения об ошибках обрабатываются мной максимально быстро')
 
 async def info_FAQ(callback : types.CallbackQuery):
+<<<<<<< HEAD
     await callback.message.answer("Здесь вы модете найти ответ на часто задаваемые вопросы", reply_markup=inline_btn_block_q)
+=======
+    await callback.message.answer("Here you can find answers to frequently asked questions\n\nЗдесь вы модете найти ответ на часто задаваемые вопросы", reply_markup=btn_uni_select_kb)
+    # inline_btn_block_q
+>>>>>>> d02d952911312e269a4b7cd1263f68a7409f46a0
     await callback.answer()
 
 async def info_about(callback : types.CallbackQuery):
@@ -251,6 +261,50 @@ async def get_schedule(message : types.Message):
         activities = ""
         await bot.send_message(message.from_user.id, string)
 
+# __________________ Университет лист заявка ________________________
+
+@dp.callback_query_handler(uni_callback.filter(action='next'))
+async def uni_page_handler(query: types.CallbackQuery, callback_data: dict):
+    uni = get_arr_uni("uni.txt")
+    page = int(callback_data['page'])
+    current = int(callback_data['current'])
+    i = current
+    keyboard = uni_sellection_kb("uni.txt", page = page + 1, current=current + 3)
+    j = 0
+    while (j < 3):
+        if (len(uni) > i):
+            keyboard.add(InlineKeyboardButton(uni[i], callback_data=i))
+        else:
+            keyboard.add(InlineKeyboardButton("IGNORE", callback_data="IGNORE"))
+        i += 1
+        j += 1
+    logging.info(callback_data)
+    await query.message.edit_text("LLLL", reply_markup=keyboard)
+
+@dp.callback_query_handler(uni_callback.filter(action='back'))
+async def uni_page_handler(query: types.CallbackQuery, callback_data: dict):
+    uni = get_arr_uni("uni.txt")
+    page = int(callback_data['page'])
+    current = int(callback_data['current'])
+    keyboard = uni_sellection_kb("uni.txt", page = page - 1, current=current - 3)
+    page = int(callback_data['page']) + 1
+    current = int(callback_data['current'])
+    i = current - 3
+    j = 0
+    while (j < 3):
+        if (len(uni) > i):
+            keyboard.add(InlineKeyboardButton(uni[i], callback_data=i))
+        else:
+            keyboard.add(InlineKeyboardButton("IGNORE", callback_data="IGNORE"))
+        i += 1
+        j += 1
+    logging.info(callback_data)
+    await query.message.edit_text("LLLL", reply_markup=keyboard)
+
+async def uni_test(message : types.Message):
+    await bot.send_message(message.from_user.id, "Uni test inline back", reply_markup=btn_uni_select_kb)
+
+
 def register_handlers_client(dp: Dispatcher):
     FAQ=lambda c: c.data == 'FAQ'
     about=lambda c: c.data == 'about'
@@ -259,6 +313,7 @@ def register_handlers_client(dp: Dispatcher):
     dp.register_message_handler(command_start, commands=['start', 'старт'])
     dp.register_message_handler(get_schedule, commands=['расписание'])
     dp.register_message_handler(command_info, commands=['информация'])
+    dp.register_message_handler(uni_test, commands=['uni'])
     dp.register_message_handler(user_form_start, commands=['заявка'])
     dp.register_message_handler(cancel_handler, commands=['отмена_заявки'], state='*')
     dp.register_message_handler(tariffs_info, commands=['тарифы'])
