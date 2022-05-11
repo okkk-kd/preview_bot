@@ -1,6 +1,5 @@
-from doctest import IGNORE_EXCEPTION_DETAIL
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
-
+from algorithms.uni_sel import uni_sellection_kb
 #  __________________________основная клавиатура_____________________________
 
 btn_start = KeyboardButton('/заявка') # ok
@@ -9,6 +8,7 @@ btn_info = KeyboardButton('/информация') # ok
 btn_schedule = KeyboardButton('/расписание') # ok
 btn_tariffs = KeyboardButton('/тарифы') # ok
 btn_auth = KeyboardButton('/авторизация') # ok
+btn_uni = KeyboardButton('/uni')
 btn_request_form = ReplyKeyboardMarkup(resize_keyboard=True)
 btn_request_form\
     .add(btn_start)\
@@ -16,7 +16,8 @@ btn_request_form\
     .add(btn_schedule)\
     .insert(btn_info)\
     .add(btn_tariffs)\
-    .add(btn_auth)
+    .add(btn_auth)\
+    .insert(btn_uni)
 
 #  __________________________FAQ клавиатура_____________________________
 
@@ -73,3 +74,8 @@ btn_block_tariffs = ReplyKeyboardMarkup(resize_keyboard=True)\
 
 btn_cancel_q = KeyboardButton("/отмена_вопроса")
 btn_cancel_new_question = ReplyKeyboardMarkup(resize_keyboard=True).add(btn_cancel_q)
+
+# __________________________ Выбор университета ___________________________
+
+btn_uni_select_kb = uni_sellection_kb("uni.txt")
+
