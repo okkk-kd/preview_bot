@@ -13,9 +13,12 @@ from keyboards import btn_request_form, inline_btn_block_info, btn_block_tariffs
 from schedule.schedule import return_schedule, Schedule_ob
 
 class Form(StatesGroup):
-    name = State()
-    tariff = State()
-    phone = State()
+    uni = State()
+    direction = State()
+    course = State()
+    type_work = State()
+    theme = State()
+    file = State()
     nickname = State()
     tg_id = State()
     status = State()
@@ -27,9 +30,9 @@ class SendQuestion(StatesGroup):
 
 async def command_start(message : types.Message):
     try:
-        await bot.send_message(message.from_user.id, 'Hello, I was created to introduce you to telegram-bots. If you see this message, you have started a dialogue with me, and here can be any message that you want to show to anyone who starts a dialogue with me\n\nЗдравствуйте, я создан, чтобы познакомить вас с телеграм-ботами. Если вы видите это сообщение, вы начали диалог со мной, и здесь может быть любое сообщение, которое вы хотите показать всем, кто начинает диалог со мной.\nДля получения доступа к управлению заявками намипишите мне: https://t.me/kritinidzin', reply_markup=btn_request_form)
+        await bot.send_message(message.from_user.id, 'Здравствуйте, я создан, чтобы познакомить вас с телеграм-ботами. Если вы видите это сообщение, вы начали диалог со мной, и здесь может быть любое сообщение, которое вы хотите показать всем, кто начинает диалог со мной.\nДля получения доступа к управлению заявками намипишите мне: https://t.me/kritinidzin', reply_markup=btn_request_form)
     except:
-        await message.answer('Something went wrong, error messages are processed by me as quickly as possible\n\nЧто-то пошло не так, сообщения об ошибках обрабатываются мной максимально быстро')
+        await message.answer('Что-то пошло не так, сообщения об ошибках обрабатываются мной максимально быстро')
 
 def check_username(userid, db_name, query):
     id = execute_query(db_name, query)
@@ -41,62 +44,82 @@ async def user_form_start(message : types.Message):
     try:
         query = "SELECT EXISTS(SELECT tg_id FROM bot WHERE tg_id = '" + str(message.from_user.id) + "' AND status = 1)"
         if (check_username(message.from_user.id, db_name, query)[0][0] == 1):
-            await message.answer('Your application is being processed, please wait for a response\n\nВаша заявка обрабатывается, дождитесь ответа')
+            await message.answer('Ваша заявка обрабатывается, дождитесь ответа')
         else:
-            await Form.name.set()
-            await message.answer('Enter your name\n\nВведие ваше имя')
+            await Form.uni.set()
+            await message.answer('Выберите из списка университет')
     except:
-        await message.answer('Something went wrong, error messages are processed by me as quickly as possible\n\nЧто-то пошло не так, сообщения об ошибках обрабатываются мной максимально быстро')
+        await message.answer('Что-то пошло не так, сообщения об ошибках обрабатываются мной максимально быстро')
 
 async def cancel_handler(message: types.Message, state: Form):
     current_state = await state.get_state()
     if current_state is None:
         return
     await state.finish()
-    await message.answer('Cancellation was successful\n\nОтмена произошла успешно')
+    await message.answer('Отмена произошла успешно')
 
-async def get_name(message: types.Message, state: Form):
+async def get_uni(message: types.Message, state: Form):
     async with state.proxy() as data:
-        data['name'] = message.text
+        data['uni'] = message.text
         data['tg_id'] = message.from_user.id
         data['nickname'] = message.from_user.username
         data['status'] = 1
     await Form.next()
-    await message.answer('Choose a plan | Выберите тариф', reply_markup=btn_block_tariffs)
+    await message.answer('Выберите из списка направление', reply_markup=btn_block_tariffs)
 
-async def get_tariff_form(message: types.Message, state: Form):
+async def get_direction(message: types.Message, state: Form):
     async with state.proxy() as data:
-        data['tariff'] = message.text
+        data['direction'] = message.text
     await Form.next()
-    await message.answer('Введите телефон', reply_markup=btn_request_form)
+    await message.answer('Выберите из списка курс', reply_markup=btn_request_form)
 
-async def get_phone(message: types.Message, state: Form):
+async def get_course(message: types.Message, state: Form):
     async with state.proxy() as data:
-        data['phone'] = message.text
+        data['course'] = message.text
+    await Form.next()
+    await message.answer('Выберите из списка тип работы', reply_markup=btn_request_form)
+
+async def get_type_work(message: types.Message, state: Form):
+    async with state.proxy() as data:
+        data['type_work'] = message.text
+    await Form.next()
+    await message.answer('Введите тему работы', reply_markup=btn_request_form)
+
+async def get_theme(message: types.Message, state: Form):
+    async with state.proxy() as data:
+        data['theme'] = message.text
+    await Form.next()
+    await message.answer('Отправте файл с заданием', reply_markup=btn_request_form)
+
+
+async def get_file(message: types.Message, state: Form):
+    async with state.proxy() as data:
+        data['file'] = message.text
     user = [
-        (data['name'],
-        data['phone'],
+        (data['uni'],
+        data['direction'],
+        data['course'],
+        data['type_work'],
+        data['theme'],
         data['tg_id'],
         data['nickname'],
-        data['status'],
-        data['tariff'])
+        data['status'])
     ]
-    condition = lambda a : "Обрабатывается | being processed" if (a == 1) else "Ошибка | Error status"
+    condition = lambda a : "Обрабатывается" if (a == 1) else "Ошибка обработки, уже решаем вашу проблему"
     await bot.send_message(
             
             message.chat.id,
             md.text(
-                md.text('Имя: ', data['name']),
-                md.text('Телефон: ', data['phone']),
-                md.text('Telegram id: ', data['tg_id']),
+                md.text('Университет: ', data['uni']),
+                md.text('Направление: ', data['direction']),
+                md.text('Курс: ', data['course']),
                 md.text('Имя пользователя: ', data['nickname']),
                 md.text('Статус: ', condition(data['status'])),
-                md.text('Тариф: ', data['tariff']),
                 sep='\n',
             ),
             parse_mode=ParseMode.MARKDOWN,
         )
-    stmt = "INSERT INTO `bot`(`name`, `phone`, `tg_id`, `nickname`, `status`, `tariff`) VALUES (?, ?, ?, ?, ?, ?)"
+    stmt = "INSERT INTO `bot`(`uni`, `direction`, `course`, `type_work` , `theme` ,`tg_id`, `nickname`, `status`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
     paste_user(db_name, stmt, user)
     await state.finish()
 
@@ -104,12 +127,12 @@ async def get_phone(message: types.Message, state: Form):
 
 async def command_info(message : types.Message):
     try:
-        await bot.send_message(message.from_user.id, 'Any of your information can be located here, you can see an example for yourself:\n\nЗдесь может располагаться любая ваша информация, пример вы можете видеть сами:', reply_markup=inline_btn_block_info)
+        await bot.send_message(message.from_user.id, 'Здесь может располагаться любая ваша информация, пример вы можете видеть сами:', reply_markup=inline_btn_block_info)
     except:
-        await message.answer('Something went wrong, error messages are processed by me as quickly as possible\n\nЧто-то пошло не так, сообщения об ошибках обрабатываются мной максимально быстро')
+        await message.answer('Что-то пошло не так, сообщения об ошибках обрабатываются мной максимально быстро')
 
 async def info_FAQ(callback : types.CallbackQuery):
-    await callback.message.answer("Here you can find answers to frequently asked questions\n\nЗдесь вы модете найти ответ на часто задаваемые вопросы", reply_markup=inline_btn_block_q)
+    await callback.message.answer("Здесь вы модете найти ответ на часто задаваемые вопросы", reply_markup=inline_btn_block_q)
     await callback.answer()
 
 async def info_about(callback : types.CallbackQuery):
@@ -179,9 +202,9 @@ async def get_text_question(message: types.Message, state: SendQuestion):
 
 async def tariffs_info(message : types.Message):
     try:
-        await bot.send_message(message.from_user.id, 'Any payment related information can be found here.\n\nЗдесь может находиться любая информация касающаяся оплаты', reply_markup=inline_btn_block_tariffs)
+        await bot.send_message(message.from_user.id, 'Здесь может находиться любая информация касающаяся оплаты', reply_markup=inline_btn_block_tariffs)
     except:
-        await message.answer('Something went wrong, error messages are processed by me as quickly as possible\n\nЧто-то пошло не так, сообщения об ошибках обрабатываются мной максимально быстро')
+        await message.answer('Что-то пошло не так, сообщения об ошибках обрабатываются мной максимально быстро')
 
 async def send_offer_prewiew(callback : types.CallbackQuery):
     if (callback.data == "1 Offer"):
@@ -205,31 +228,15 @@ async def send_offer(callback : types.CallbackQuery):
         print (callback.from_user.last_name)
         query = "SELECT EXISTS(SELECT tg_id FROM bot WHERE tg_id = '" + str(callback.from_user.id) + "' AND status = 1)"
         if (check_username(callback.from_user.id, db_name, query)[0][0] == 1):
-            await callback.message.answer('Your application is being processed, please wait for a response\n\nВаша заявка обрабатывается, дождитесь ответа')
+            await callback.message.answer('Ваша заявка обрабатывается, дождитесь ответа')
             await callback.answer()
         else:
-            await Form.name.set()
-            await callback.message.answer('Enter your name\n\nВведие ваше имя')
+            await Form.uni.set()
+            await callback.message.answer('Выберите из списка университет')
             await callback.answer()
     except:
-        await callback.message.answer('Something went wrong, error messages are processed by me as quickly as possible\n\nЧто-то пошло не так, сообщения об ошибках обрабатываются мной максимально быстро')
+        await callback.message.answer('Что-то пошло не так, сообщения об ошибках обрабатываются мной максимально быстро')
         await callback.answer()
-
-# @dp.callback_query_handler(text_startswith='Offer', state=Form)
-# async def send_offer(callback : types.CallbackQuery, state: FSMContext):
-#     match callback.data:
-#         case "1 Offer":
-#             await callback.message.answer('1')
-#             await callback.answer()
-#         case "2 Offer":
-#             await callback.message.answer('2')
-#             await callback.answer()
-#         case "3 Offer":
-#             await callback.message.answer('3')
-#             await callback.answer()
-#         case "4 Offer":
-#             await callback.message.answer('4')
-#             await callback.answer()
 
 #  __________________________расписание_____________________________
 
@@ -240,7 +247,7 @@ async def get_schedule(message : types.Message):
         ob = obj.return_activ()
         for activ in ob:
             activities += activ
-        string = obj.day + activities
+        string = obj.day + activities 
         activities = ""
         await bot.send_message(message.from_user.id, string)
 
@@ -255,9 +262,12 @@ def register_handlers_client(dp: Dispatcher):
     dp.register_message_handler(user_form_start, commands=['заявка'])
     dp.register_message_handler(cancel_handler, commands=['отмена_заявки'], state='*')
     dp.register_message_handler(tariffs_info, commands=['тарифы'])
-    dp.register_message_handler(get_name, state=Form.name)
-    dp.register_message_handler(get_phone, state=Form.phone)
-    dp.register_message_handler(get_tariff_form, state=Form.tariff)
+    dp.register_message_handler(get_uni, state=Form.uni)
+    dp.register_message_handler(get_course, state=Form.course)
+    dp.register_message_handler(get_direction, state=Form.direction)
+    dp.register_message_handler(get_type_work, state=Form.type_work)
+    dp.register_message_handler(get_theme, state=Form.theme)
+    dp.register_message_handler(get_file, state=Form.file)
     dp.register_message_handler(cancel_form_question, commands=['отмена_вопроса'], state='*')
     dp.register_message_handler(get_text_question, state=SendQuestion.text_q)
     dp.register_callback_query_handler(info_FAQ, FAQ)

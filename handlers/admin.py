@@ -10,10 +10,7 @@ from create_bot import dp, bot
 from keyboards import btn_case_admin, inline_btn_block_control, btn_request_form, inline_btn_block_control_accepted, inline_btn_block_control_questions, inline_btn_block_control_questions_old
 
 async def auth_admin(message : types.Message):
-    if (message.from_user.id == 995404025):
-        await message.answer("Вы авторизованы как админ", reply_markup=btn_case_admin)
-    else:
-        await message.answer("У вас нет доступа")
+    await message.answer("Вы авторизованы как админ", reply_markup=btn_case_admin)
 
 async def load_requests(message : types.Message):
     requests = each_el_db()
