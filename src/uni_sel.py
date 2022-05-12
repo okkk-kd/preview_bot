@@ -13,7 +13,7 @@ def get_arr_uni(path_fie):
 
 uni_callback = CallbackData("uni", "page", "action", "current")
 
-def uni_sellection_kb(path, page: int = 0, current: int = 0) -> InlineKeyboardMarkup:
+def uni_sellection_kb(path, page: int = 0, current: int = 3) -> InlineKeyboardMarkup:
     keyboard = InlineKeyboardMarkup(row_width=3)
     uni = get_arr_uni(path)
     has_next_page = len(uni) > page + 1
@@ -21,12 +21,12 @@ def uni_sellection_kb(path, page: int = 0, current: int = 0) -> InlineKeyboardMa
         keyboard.insert(
             InlineKeyboardButton(
                 text="< Назад",
-                callback_data=uni_callback.new(action='back', page=page, current=current)
+                callback_data=uni_callback.new(action='back', page=page - 1, current=current - 3)
             )
         )
     keyboard.insert(
         InlineKeyboardButton(
-            text=f"• {page}",
+            text=f"• {page + 1}",
             callback_data="dont_click_me"
         )
     )
@@ -34,7 +34,7 @@ def uni_sellection_kb(path, page: int = 0, current: int = 0) -> InlineKeyboardMa
         keyboard.insert(
             InlineKeyboardButton(
                 text="Вперёд >",
-                callback_data=uni_callback.new(action='next', page=page, current=current)
+                callback_data=uni_callback.new(action='next', page=page + 1, current=current + 3)
             )
         )
     return keyboard

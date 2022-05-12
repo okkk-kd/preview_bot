@@ -1,0 +1,1 @@
+from handlers.client.callback.uni_sellection_call import register_callback_handlers_uni_selection
