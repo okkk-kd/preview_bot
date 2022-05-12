@@ -1,9 +1,11 @@
 from src.check_user import check_username
 
 from handlers.client.callback.uni_sellection_call import register_callback_handlers_uni_selection
+from handlers.client.callback.direction_sellection_call import register_callback_handlers_dir_selection
 
 from keyboards.request import btn_uni_select_kb, \
-    btn_request_form
+    btn_request_form, \
+    btn_dir_select_kb
 
 from create_bot import db_name, bot, dp
 
@@ -52,7 +54,9 @@ async def get_uni(message: types.Message, state: Form):
         data['nickname'] = message.from_user.username
         data['status'] = 1
     await Form.next()
-    await message.answer('Выберите из списка направление', reply_markup=btn_uni_select_kb)
+    await message.answer('Выберите из списка направление', reply_markup=btn_dir_select_kb)
+
+register_callback_handlers_dir_selection(dp, state=Form)
 
 async def get_direction(message: types.Message, state: Form):
     async with state.proxy() as data:

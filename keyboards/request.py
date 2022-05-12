@@ -1,4 +1,5 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
+from src.dir_sel import dir_sellection_kb
 from src.uni_sel import uni_sellection_kb
 #  __________________________основная клавиатура_____________________________
 
@@ -46,3 +47,6 @@ btn_cancel_new_question = ReplyKeyboardMarkup(resize_keyboard=True).add(btn_canc
 
 btn_uni_select_kb = uni_sellection_kb("uni.txt")
 
+# __________________________ Выбор университета ___________________________
+
+btn_dir_select_kb = dir_sellection_kb("direction.txt")
