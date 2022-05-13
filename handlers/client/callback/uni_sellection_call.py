@@ -45,13 +45,6 @@ async def uni_page_handler_back(query: types.CallbackQuery, callback_data: dict)
     logging.info(callback_data)
     await query.message.edit_text("LLLL", reply_markup=keyboard)
 
-async def uni_button_select(query: types.CallbackQuery, state: FSMContext):
-    if (len(get_arr_uni("uni.txt")) > parse_digit(query.data)):
-        await state.update_data(uni=get_arr_uni("uni.txt")[parse_digit(query.data)])
-        print(get_arr_uni("uni.txt")[parse_digit(query.data)])
-
 def register_callback_handlers_uni_selection(dp: Dispatcher, state):
-    uni_pages=lambda c: c.data.startswith("uni_")
     dp.register_callback_query_handler(uni_page_handler_next, uni_callback.filter(action='next'), state=state)
     dp.register_callback_query_handler(uni_page_handler_back, uni_callback.filter(action='back'), state=state)
-    dp.register_callback_query_handler(uni_button_select, uni_pages, state=state)

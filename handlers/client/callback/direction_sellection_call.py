@@ -45,14 +45,6 @@ async def dir_page_handler_back(query: types.CallbackQuery, callback_data: dict)
     logging.info(callback_data)
     await query.message.edit_text("dir", reply_markup=keyboard)
 
-async def dir_button_select(query: types.CallbackQuery, state: FSMContext):
-    if (len(get_arr_dir("direction.txt")) > parse_digit(query.data)):
-        await state.update_data(uni=get_arr_dir("direction.txt")[parse_digit(query.data)])
-        print(get_arr_dir("direction.txt")[parse_digit(query.data)])
-
-
 def register_callback_handlers_dir_selection(dp: Dispatcher, state):
-    dir_pages=lambda c: c.data.startswith("dir_")
     dp.register_callback_query_handler(dir_page_handler_next, dir_callback.filter(dir_action='dir_next'), state=state)
     dp.register_callback_query_handler(dir_page_handler_back, dir_callback.filter(dir_action='dir_back'), state=state)
-    dp.register_callback_query_handler(dir_button_select, dir_pages, state=state)

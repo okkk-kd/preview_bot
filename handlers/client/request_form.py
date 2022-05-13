@@ -1,6 +1,7 @@
 from src.check_user import check_username
 from src.uni_sel import get_arr_uni
 from src.dir_sel import get_arr_dir
+from src.is_str_same import is_str_same
 
 from handlers.client.callback.uni_sellection_call import register_callback_handlers_uni_selection
 from handlers.client.callback.direction_sellection_call import register_callback_handlers_dir_selection
@@ -17,6 +18,9 @@ from aiogram import types, Dispatcher
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.types import ParseMode
 import aiogram.utils.markdown as md
+
+from aiogram.dispatcher import FSMContext
+from src.parse_digit import parse_digit
 
 class Form(StatesGroup):
     uni = State()
@@ -49,23 +53,25 @@ async def cancel_handler(message: types.Message, state: Form):
 
 register_callback_handlers_uni_selection(dp, state=Form)
 
-async def get_uni(message: types.Message, state: Form):
-    async with state.proxy() as data:
-        # if (len(get_arr_dir()) > int(callback.data)):
-        #     state.update_data(uni=get_arr_dir()[int(callback.data)])
-        # else:
-        data['uni'] = message.from_user.id
-        data['tg_id'] = message.from_user.id
-        data['nickname'] = message.from_user.username
-        data['status'] = 1
-    await Form.next()
-    await message.answer('Выберите из списка направление', reply_markup=btn_dir_select_kb)
+async def uni_button_select(query: types.CallbackQuery, state: FSMContext):
+    if (len(get_arr_uni("uni.txt")) > parse_digit(query.data)):
+        await state.update_data(uni=get_arr_uni("uni.txt")[parse_digit(query.data)])
+        await state.set_state(Form.direction)
+        await query.message.answer('Выберите из списка направление', reply_markup=btn_dir_select_kb)
 
 register_callback_handlers_dir_selection(dp, state=Form)
 
+async def dir_button_select(query: types.CallbackQuery, state: FSMContext):
+    if (len(get_arr_dir("direction.txt")) > parse_digit(query.data)):
+        await state.update_data(direction=get_arr_dir("direction.txt")[parse_digit(query.data)])
+        await state.set_state(Form.course)
+        await query.message.answer('Выберите из списка курс', reply_markup=btn_dir_select_kb)
+
 async def get_direction(message: types.Message, state: Form):
     async with state.proxy() as data:
-        data['direction'] = message.text
+        data['tg_id'] = message.from_user.id
+        data['nickname'] = message.from_user.username
+        data['status'] = 1
     await Form.next()
     await message.answer('Выберите из списка курс', reply_markup=btn_request_form)
 
@@ -120,8 +126,11 @@ async def get_file(message: types.Message, state: Form):
     await state.finish()
 
 def register_handlers_request_form(dp: Dispatcher):
+    uni_pages=lambda c: c.data.startswith("uni_")
+    dir_pages=lambda c: c.data.startswith("dir_")
+    dp.register_callback_query_handler(dir_button_select, dir_pages, state=Form)
+    dp.register_callback_query_handler(uni_button_select, uni_pages, state=Form)
     dp.register_message_handler(cancel_handler, commands=['отмена'], state='*')
-    dp.register_message_handler(get_uni, state=Form.uni)
     dp.register_message_handler(get_course, state=Form.course)
     dp.register_message_handler(get_direction, state=Form.direction)
     dp.register_message_handler(get_type_work, state=Form.type_work)
