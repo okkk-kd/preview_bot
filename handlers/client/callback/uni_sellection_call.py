@@ -1,18 +1,14 @@
-from src.uni_sel import get_arr_uni, \
-    uni_sellection_kb, \
+from src.uni_sel import uni_sellection_kb, \
     uni_callback
-from src.parse_digit import parse_digit
+from src.get_arr import get_arr
 
-from create_bot import dp
-
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardButton
 from aiogram import types, Dispatcher
-from aiogram.dispatcher import FSMContext
 
 import logging
 
 async def uni_page_handler_next(query: types.CallbackQuery, callback_data: dict):
-    uni = get_arr_uni("uni.txt")
+    uni = get_arr("uni.txt")
     page = int(callback_data['page'])
     current = int(callback_data['current'])
     i = current - 3
@@ -28,7 +24,7 @@ async def uni_page_handler_next(query: types.CallbackQuery, callback_data: dict)
     await query.message.edit_text("LLLL", reply_markup=keyboard)
 
 async def uni_page_handler_back(query: types.CallbackQuery, callback_data: dict):
-    uni = get_arr_uni("uni.txt")
+    uni = get_arr("uni.txt")
     page = int(callback_data['page'])
     current = int(callback_data['current'])
     keyboard = uni_sellection_kb("uni.txt", page, current)

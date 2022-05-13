@@ -3,9 +3,9 @@ from aiogram.utils.callback_data import CallbackData
 
 from src.get_arr import get_arr
 
-uni_callback = CallbackData("uni", "page", "action", "current")
+course_callback = CallbackData("course", "course_page", "course_action", "course_current")
 
-def uni_sellection_kb(path, page: int = 0, current: int = 3) -> InlineKeyboardMarkup:
+def course_sellection_kb(path, page: int = 0, current: int = 3) -> InlineKeyboardMarkup:
     keyboard = InlineKeyboardMarkup(row_width=3)
     uni = get_arr(path)
     has_next_page = len(uni) > page + 1
@@ -13,7 +13,7 @@ def uni_sellection_kb(path, page: int = 0, current: int = 3) -> InlineKeyboardMa
         keyboard.insert(
             InlineKeyboardButton(
                 text="< Назад",
-                callback_data=uni_callback.new(action='back', page=page - 1, current=current - 3)
+                callback_data=course_callback.new(course_action='course_back', course_page=page - 1, course_current=current - 3)
             )
         )
     keyboard.insert(
@@ -26,7 +26,7 @@ def uni_sellection_kb(path, page: int = 0, current: int = 3) -> InlineKeyboardMa
         keyboard.insert(
             InlineKeyboardButton(
                 text="Вперёд >",
-                callback_data=uni_callback.new(action='next', page=page + 1, current=current + 3)
+                callback_data=course_callback.new(course_action='course_next', course_page=page + 1, course_current=current + 3)
             )
         )
     return keyboard

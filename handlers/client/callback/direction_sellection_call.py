@@ -1,18 +1,14 @@
-﻿from src.dir_sel import get_arr_dir, \
-    dir_sellection_kb, \
+﻿from src.dir_sel import dir_sellection_kb, \
     dir_callback
-from src.parse_digit import parse_digit
+from src.get_arr import get_arr
 
-from create_bot import dp
-
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardButton
 from aiogram import types, Dispatcher
-from aiogram.dispatcher import FSMContext
 
 import logging
 
 async def dir_page_handler_next(query: types.CallbackQuery, callback_data: dict):
-    uni = get_arr_dir("direction.txt")
+    uni = get_arr("direction.txt")
     page = int(callback_data['dir_page'])
     current = int(callback_data['dir_current'])
     i = current - 3
@@ -28,7 +24,7 @@ async def dir_page_handler_next(query: types.CallbackQuery, callback_data: dict)
     await query.message.edit_text("dir", reply_markup=keyboard)
 
 async def dir_page_handler_back(query: types.CallbackQuery, callback_data: dict):
-    uni = get_arr_dir("direction.txt")
+    uni = get_arr("direction.txt")
     page = int(callback_data['dir_page'])
     current = int(callback_data['dir_current'])
     print(query.data)

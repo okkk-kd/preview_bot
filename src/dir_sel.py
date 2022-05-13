@@ -1,21 +1,13 @@
 ﻿from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.callback_data import CallbackData
-from aiogram import types
 
-def get_arr_dir(path_fie):
-    file = open(path_fie, 'rb')
-    line = file.readline().decode('utf-8')
-    uni = []
-    while (line):
-        uni.append(line)
-        line = file.readline().decode('utf-8')
-    return uni
+from src.get_arr import get_arr
 
 dir_callback = CallbackData("dir", "dir_page", "dir_action", "dir_current")
 
 def dir_sellection_kb(path, page: int = 0, current: int = 3) -> InlineKeyboardMarkup:
     keyboard = InlineKeyboardMarkup(row_width=3)
-    uni = get_arr_dir(path)
+    uni = get_arr(path)
     has_next_page = len(uni) > page + 1
     if page != 0:
         keyboard.insert(

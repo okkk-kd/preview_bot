@@ -1,6 +1,8 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 from src.dir_sel import dir_sellection_kb
 from src.uni_sel import uni_sellection_kb
+from src.course_sel import course_sellection_kb
+from src.work_sel import work_sellection_kb
 #  __________________________основная клавиатура_____________________________
 
 btn_start = KeyboardButton('/заявка') # ok
@@ -50,3 +52,7 @@ btn_uni_select_kb = uni_sellection_kb("uni.txt")
 # __________________________ Выбор университета ___________________________
 
 btn_dir_select_kb = dir_sellection_kb("direction.txt")
+
+btn_cours_sellection_kb = course_sellection_kb("course.txt")
+
+btn_work_sellection_kb = work_sellection_kb("type_of_work.txt")
