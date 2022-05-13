@@ -1,15 +1,16 @@
 from src.uni_sel import get_arr_uni, \
     uni_sellection_kb, \
     uni_callback
+from src.parse_digit import parse_digit
 
 from create_bot import dp
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram import types, Dispatcher
+from aiogram.dispatcher import FSMContext
 
 import logging
 
-# @dp.callback_query_handler(uni_callback.filter(action='next'), state=Form)
 async def uni_page_handler_next(query: types.CallbackQuery, callback_data: dict):
     uni = get_arr_uni("uni.txt")
     page = int(callback_data['page'])
@@ -19,14 +20,13 @@ async def uni_page_handler_next(query: types.CallbackQuery, callback_data: dict)
     keyboard = uni_sellection_kb("uni.txt", page = page, current=current)
     while (i < current):
         if (len(uni) > i):
-            keyboard.add(InlineKeyboardButton(uni[i], callback_data=i))
+            keyboard.add(InlineKeyboardButton(uni[i], callback_data="uni_" + str(i)))
         else:
             keyboard.add(InlineKeyboardButton("IGNORE", callback_data="IGNORE"))
         i += 1
     logging.info(callback_data)
     await query.message.edit_text("LLLL", reply_markup=keyboard)
 
-# @dp.callback_query_handler(uni_callback.filter(action='back'), state=Form)
 async def uni_page_handler_back(query: types.CallbackQuery, callback_data: dict):
     uni = get_arr_uni("uni.txt")
     page = int(callback_data['page'])
@@ -37,7 +37,7 @@ async def uni_page_handler_back(query: types.CallbackQuery, callback_data: dict)
     print(page, current)
     while (j < 3):
         if (len(uni) > i):
-            keyboard.add(InlineKeyboardButton(uni[i], callback_data=i))
+            keyboard.add(InlineKeyboardButton(uni[i], callback_data="uni_" + str(i)))
         else:
             keyboard.add(InlineKeyboardButton("IGNORE", callback_data="IGNORE"))
         i += 1
@@ -45,6 +45,13 @@ async def uni_page_handler_back(query: types.CallbackQuery, callback_data: dict)
     logging.info(callback_data)
     await query.message.edit_text("LLLL", reply_markup=keyboard)
 
+async def uni_button_select(query: types.CallbackQuery, state: FSMContext):
+    if (len(get_arr_uni("uni.txt")) > parse_digit(query.data)):
+        await state.update_data(uni=get_arr_uni("uni.txt")[parse_digit(query.data)])
+        print(get_arr_uni("uni.txt")[parse_digit(query.data)])
+
 def register_callback_handlers_uni_selection(dp: Dispatcher, state):
+    uni_pages=lambda c: c.data.startswith("uni_")
     dp.register_callback_query_handler(uni_page_handler_next, uni_callback.filter(action='next'), state=state)
     dp.register_callback_query_handler(uni_page_handler_back, uni_callback.filter(action='back'), state=state)
+    dp.register_callback_query_handler(uni_button_select, uni_pages, state=state)

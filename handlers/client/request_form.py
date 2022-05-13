@@ -1,4 +1,6 @@
 from src.check_user import check_username
+from src.uni_sel import get_arr_uni
+from src.dir_sel import get_arr_dir
 
 from handlers.client.callback.uni_sellection_call import register_callback_handlers_uni_selection
 from handlers.client.callback.direction_sellection_call import register_callback_handlers_dir_selection
@@ -49,7 +51,10 @@ register_callback_handlers_uni_selection(dp, state=Form)
 
 async def get_uni(message: types.Message, state: Form):
     async with state.proxy() as data:
-        data['uni'] = message.text
+        # if (len(get_arr_dir()) > int(callback.data)):
+        #     state.update_data(uni=get_arr_dir()[int(callback.data)])
+        # else:
+        data['uni'] = message.from_user.id
         data['tg_id'] = message.from_user.id
         data['nickname'] = message.from_user.username
         data['status'] = 1
