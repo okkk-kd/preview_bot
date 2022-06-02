@@ -9,7 +9,7 @@ db_question = "question.db"
 storage = MemoryStorage()
 
 # API_TOKEN = "5287234911:AAHdvM3Wr0mxVaGKmafSSx4TSo4fVSAuOuQ"
-API_TOKEN = "5201780383:AAFFrv7H2xhESrX2EN9RA8UjhDkxYXvIa_g"
+API_TOKEN = "5287234911:AAHdvM3Wr0mxVaGKmafSSx4TSo4fVSAuOuQ"
 logging.basicConfig(level=logging.INFO)
 
 bot = Bot(token=API_TOKEN)
