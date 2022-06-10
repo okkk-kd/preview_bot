@@ -30,4 +30,3 @@ Python
 
 # 7.Контактная информация
 - Крицин Даниил: kritinidzin@gmail.com
-- Павлов Сергей: thebordev@gmail.com
